@@ -35,7 +35,9 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>MemeMe needs to visis your album</string>
+	<string>MemeMe needs to visit your album</string>
+	<key>NSCameraUsageDescription</key>
+	<string>MemeMe needs to visit your camera</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
