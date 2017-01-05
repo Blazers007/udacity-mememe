@@ -34,12 +34,16 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         super.viewWillAppear(animated)
         // detect devcice camera enabled or not (should detect for every time)
         cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
+        // Hide the navagitionController's navigation bar
+//        navigationController?.setNavigationBarHidden(true, animated: true)
         // subscribe keyboard
         subscribeToKeyboardNotifications()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // Show the navagitionController's navigation bar
+//        navigationController?.setNavigationBarHidden(false, animated: true)
         unsubscribeFromKeyboardNotifications()
     }
     
@@ -140,11 +144,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     }
     
     @IBAction func pickFromAlbum(_ sender: UIBarButtonItem) {
-        let imagePicker = UIImagePickerController()
-        imagePicker.delegate = self
         pickAnImageFromSource(source: .photoLibrary)
-        // Show image picker view controller
-        present(imagePicker, animated: true, completion: nil)
     }
     
     @IBAction func shareMeme(_ sender: UIBarButtonItem) {
@@ -160,10 +160,8 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     }
     
     @IBAction func cancel(_ sender: UIBarButtonItem) {
-        if imagePickerView.image != nil {
-            imagePickerView.image = nil
-            hideEditMemeViews()
-        }
+//        navigationController?.popViewController(animated: true)
+        dismiss(animated: true, completion: nil)
     }
     
     
