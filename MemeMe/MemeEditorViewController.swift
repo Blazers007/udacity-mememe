@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
+class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
 
     // MARK: -- Properties
     
@@ -28,12 +28,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         // Init textfiled config
         initTextField([topTextField, bottomTextField])
         hideEditMemeViews()
-        // detect devcice camera enabled or not
-        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // detect devcice camera enabled or not (should detect for every time)
+        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
         // subscribe keyboard
         subscribeToKeyboardNotifications()
     }
@@ -57,7 +57,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             NSStrokeColorAttributeName: UIColor.black,
             NSForegroundColorAttributeName: UIColor.white,
             NSFontAttributeName: UIFont(name: "HelveticaNeue-CondensedBlack", size: 40)!,
-            NSStrokeWidthAttributeName: -1.0]
+            NSStrokeWidthAttributeName: -3.0]
         
         for textField in textFields {
             textField.defaultTextAttributes = memeTextAttributes
@@ -85,26 +85,49 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         shareButton.isEnabled = false
     }
     
+    // Control navbar and toolbar visibility
+    func changeBarVisibility(visible: Bool) {
+        navigationBar.isHidden = !visible
+        toolbar.isHidden = !visible
+    }
+    
     // Generate Memed Image
     func generateMemedImage() -> UIImage {
         // Hide toolbar & navbar
-        navigationBar.isHidden = true
-        toolbar.isHidden = true
+        changeBarVisibility(visible: false)
         // Render view to an image
         UIGraphicsBeginImageContext(self.view.frame.size)
         view.drawHierarchy(in: self.view.frame, afterScreenUpdates: true)
         let memedImage: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         // Show toolbar & navbar
-        navigationBar.isHidden = false
-        toolbar.isHidden = false
+        changeBarVisibility(visible: true)
         // Return image
         return memedImage
     }
     
+    // Save the meme model
     func save(_ memedImage: UIImage) {
         //TODO: How to save ?
         let meme = Meme(topText: topTextField.text!, bottomText: bottomTextField.text!, originImage: imagePickerView.image!, memedImage: memedImage)
+    }
+    
+    // Open specific resource
+    func pickAnImageFromSource(source: UIImagePickerControllerSourceType) {
+        // Check type supported (should use "and" operator here )
+        if source != .camera && source != .photoLibrary {
+            print("This source has not been supported")
+            return
+        }
+        // code to pick an image from source
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.sourceType = source
+        if source == .camera {
+            imagePicker.cameraCaptureMode = .photo // take photo Not video
+            imagePicker.modalPresentationStyle = .fullScreen
+        }
+        present(imagePicker, animated: true, completion: nil)
     }
     
     // MARK: -- IBActions
@@ -113,18 +136,13 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         /*
          https://makeapppie.com/2016/06/28/how-to-use-uiimagepickercontroller-for-a-camera-and-photo-library-in-swift-3-0/
          */
-        let imagePicker = UIImagePickerController()
-        imagePicker.delegate = self
-        imagePicker.sourceType = .camera
-        imagePicker.cameraCaptureMode = .photo // take photo Not video
-        imagePicker.modalPresentationStyle = .fullScreen
-        present(imagePicker, animated: true, completion: nil)
+        pickAnImageFromSource(source: .camera)
     }
     
     @IBAction func pickFromAlbum(_ sender: UIBarButtonItem) {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
-        imagePicker.sourceType = .photoLibrary
+        pickAnImageFromSource(source: .photoLibrary)
         // Show image picker view controller
         present(imagePicker, animated: true, completion: nil)
     }
@@ -175,8 +193,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     // MARK: -- TextField delegate
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
-        // Set "TOP" "BOTTOM" to empty
-        textField.text = ""
+        // Set "TOP" "BOTTOM" to empty only if the user did not edit
+        if topTextField.text == "TOP" || bottomTextField.text == "BOTTOM" {
+            textField.text = ""
+        }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
